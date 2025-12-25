@@ -1,11 +1,13 @@
 package com.example.ck_mobile_fe;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -34,6 +36,15 @@ public class MainActivity extends AppCompatActivity {
 
         // --- KHỞI TẠO THANH CHIPS ---
         setupCategoryChips();
+
+        //test
+        AppCompatButton btnNavAuth = findViewById(R.id.btn_nav_auth);
+
+        btnNavAuth.setOnClickListener(v -> {
+            // Tạo Intent để chuyển từ MainActivity sang AuthActivity
+            Intent intent = new Intent(MainActivity.this, AuthActivity.class);
+            startActivity(intent);
+        });
 
     }
 

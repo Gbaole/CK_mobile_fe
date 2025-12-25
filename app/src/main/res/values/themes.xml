@@ -6,4 +6,16 @@
     </style>
 
     <style name="Theme.CK_mobile_fe" parent="Base.Theme.CK_mobile_fe" />
+    <style name="EliteInput">
+        <item name="android:background">@drawable/bg_input_field</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColorHint">#666666</item>
+        <item name="android:drawablePadding">12dp</item>
+    </style>
+
+    <style name="RoundedSquare">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
 </resources>
