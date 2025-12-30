@@ -27,7 +27,7 @@ import retrofit2.Response;
 public class AuthActivity extends AppCompatActivity {
     LinearLayout layoutWelcome, layoutSignin, layoutRegister;
     EditText edtEmailSignin, edtPasswordSignin;
-    EditText edtNameReg, edtEmailReg, edtPasswordReg, edtPhoneReg;
+    EditText edtNameReg, edtEmailReg, edtPasswordReg, edtPhoneReg, edtAddressReg;
     Button btnSignIn, btnRegister;
     TokenManager tokenManager;
 
@@ -52,6 +52,7 @@ public class AuthActivity extends AppCompatActivity {
         edtNameReg = findViewById(R.id.edt_name_register);
         edtEmailReg = findViewById(R.id.edt_email_register);
         edtPasswordReg = findViewById(R.id.edt_password_register);
+        edtAddressReg = findViewById(R.id.edt_address_register);
         edtPhoneReg = findViewById(R.id.edt_phone_register);
         btnRegister = findViewById(R.id.btn_register_submit);
 
@@ -74,8 +75,8 @@ public class AuthActivity extends AppCompatActivity {
         String email = edtEmailReg.getText().toString().trim();
         String password = edtPasswordReg.getText().toString().trim();
         String phone = edtPhoneReg.getText().toString().trim();
-
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || phone.isEmpty()) {
+        String address = edtAddressReg.getText().toString().trim();
+        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || phone.isEmpty() || address.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -85,6 +86,7 @@ public class AuthActivity extends AppCompatActivity {
         regData.put("email", email);
         regData.put("password", password);
         regData.put("phoneNumber", phone);
+        regData.put("shippingAddress", address);
 
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
         apiService.register(regData).enqueue(new Callback<RegisterResponse>() {
@@ -121,6 +123,7 @@ public class AuthActivity extends AppCompatActivity {
         edtEmailReg.setText("");
         edtPasswordReg.setText("");
         edtPhoneReg.setText("");
+        edtAddressReg.setText("");
     }
 
     private void handleLogin() {

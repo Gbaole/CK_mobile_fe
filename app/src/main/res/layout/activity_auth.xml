@@ -164,6 +164,7 @@
                 android:hint="••••••••"
                 android:inputType="textPassword" />
 
+
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_signin_submit"
                 android:layout_width="match_parent"
@@ -283,6 +284,23 @@
                 android:drawableStart="@drawable/ic_lock"
                 android:hint="••••••••"
                 android:inputType="textPassword" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="SHIPPING ADDRESS"
+                android:textColor="#666666"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+            <EditText
+                android:id="@+id/edt_address_register"
+                style="@style/EliteInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:drawableStart="@drawable/ic_location"
+                android:hint="223 Nguyen Trai, Q1, HCM"
+                android:inputType="textPostalAddress" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:layout_width="match_parent"

@@ -13,7 +13,7 @@ public class RegisterResponse {
 
         public String name;
         public String email;
-
+        public String shippingAddress;
         @SerializedName("avatarURL")
         public String avatarURL;
 
