@@ -226,6 +226,7 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
             <EditText
+                android:id="@+id/edt_name_register"
                 style="@style/EliteInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -233,6 +234,19 @@
                 android:drawableStart="@drawable/ic_default_avatar"
                 android:hint="Master Chief"
                 android:inputType="textPersonName" />
+            <TextView  android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="PHONE NUMBER"
+                android:textColor="#666666"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+            <EditText
+                android:id="@+id/edt_phone_register"
+                android:layout_width="match_parent"   android:layout_height="wrap_content"  style="@style/EliteInput"
+                android:hint="Your phone number"
+                android:inputType="phone"
+                android:drawableStart="@drawable/ic_phone" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -244,6 +258,7 @@
                 android:textStyle="bold" />
             <EditText
                 style="@style/EliteInput"
+                android:id="@+id/edt_email_register"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -261,6 +276,7 @@
                 android:textStyle="bold" />
             <EditText
                 style="@style/EliteInput"
+                android:id="@+id/edt_password_register"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -270,6 +286,7 @@
 
             <androidx.appcompat.widget.AppCompatButton
                 android:layout_width="match_parent"
+                android:id="@+id/btn_register_submit"
                 android:layout_height="55dp"
                 android:layout_marginTop="32dp"
                 android:background="@drawable/bg_btn_checkout"

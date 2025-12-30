@@ -13,8 +13,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.ck_mobile_fe.api.ApiService;
 import com.example.ck_mobile_fe.api.RetrofitClient;
-import com.example.ck_mobile_fe.models.LoginResponse; // Bạn cần tạo model này
-import com.example.ck_mobile_fe.utils.TokenManager; // Bạn cần tạo class này
+import com.example.ck_mobile_fe.models.LoginResponse;
+import com.example.ck_mobile_fe.models.RegisterResponse; // Đảm bảo đã import
+import com.example.ck_mobile_fe.utils.TokenManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +27,8 @@ import retrofit2.Response;
 public class AuthActivity extends AppCompatActivity {
     LinearLayout layoutWelcome, layoutSignin, layoutRegister;
     EditText edtEmailSignin, edtPasswordSignin;
-    Button btnSignIn;
+    EditText edtNameReg, edtEmailReg, edtPasswordReg, edtPhoneReg;
+    Button btnSignIn, btnRegister;
     TokenManager tokenManager;
 
     @Override
@@ -36,17 +38,24 @@ public class AuthActivity extends AppCompatActivity {
 
         tokenManager = new TokenManager(this);
 
-        // Ánh xạ View
+        // --- ÁNH XẠ VIEW ---
         layoutWelcome = findViewById(R.id.layout_welcome);
         layoutSignin = findViewById(R.id.layout_signin);
         layoutRegister = findViewById(R.id.layout_register);
 
-        // Ánh xạ các trường nhập liệu của Sign In (nhớ đặt ID trong XML tương ứng)
-        edtEmailSignin = layoutSignin.findViewById(R.id.edt_email_signin);
-        edtPasswordSignin = layoutSignin.findViewById(R.id.edt_password_signin);
-        btnSignIn = layoutSignin.findViewById(R.id.btn_signin_submit);
+        // Sign In
+        edtEmailSignin = findViewById(R.id.edt_email_signin);
+        edtPasswordSignin = findViewById(R.id.edt_password_signin);
+        btnSignIn = findViewById(R.id.btn_signin_submit);
 
-        // Xử lý chuyển đổi View
+        // Register (Dùng findViewById trực tiếp nếu IDs là duy nhất trong layout)
+        edtNameReg = findViewById(R.id.edt_name_register);
+        edtEmailReg = findViewById(R.id.edt_email_register);
+        edtPasswordReg = findViewById(R.id.edt_password_register);
+        edtPhoneReg = findViewById(R.id.edt_phone_register);
+        btnRegister = findViewById(R.id.btn_register_submit);
+
+        // --- CHUYỂN ĐỔI VIEW ---
         findViewById(R.id.btn_go_to_signin).setOnClickListener(v -> showView(layoutSignin));
         findViewById(R.id.btn_go_to_register).setOnClickListener(v -> showView(layoutRegister));
         findViewById(R.id.btn_back_from_signin).setOnClickListener(v -> showView(layoutWelcome));
@@ -55,8 +64,63 @@ public class AuthActivity extends AppCompatActivity {
         findViewById(R.id.tv_switch_to_signin).setOnClickListener(v -> showView(layoutSignin));
         findViewById(R.id.btn_close_auth).setOnClickListener(v -> finish());
 
-        // Xử lý Login
+        // --- XỬ LÝ CLICK ---
         btnSignIn.setOnClickListener(v -> handleLogin());
+        btnRegister.setOnClickListener(v -> handleRegister());
+    }
+
+    private void handleRegister() {
+        String name = edtNameReg.getText().toString().trim();
+        String email = edtEmailReg.getText().toString().trim();
+        String password = edtPasswordReg.getText().toString().trim();
+        String phone = edtPhoneReg.getText().toString().trim();
+
+        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || phone.isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Map<String, String> regData = new HashMap<>();
+        regData.put("name", name);
+        regData.put("email", email);
+        regData.put("password", password);
+        regData.put("phoneNumber", phone);
+
+        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        apiService.register(regData).enqueue(new Callback<RegisterResponse>() {
+            @Override
+            public void onResponse(Call<RegisterResponse> call, Response<RegisterResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    RegisterResponse res = response.body();
+                    Toast.makeText(AuthActivity.this, res.message, Toast.LENGTH_LONG).show();
+
+                    // 1. Chuyển sang layout đăng nhập
+                    showView(layoutSignin);
+
+                    // 2. Điền sẵn email vừa đăng ký qua ô login
+                    edtEmailSignin.setText(email);
+
+                    // 3. Xóa trắng form đăng ký
+                    clearRegisterFields();
+                } else {
+                    Toast.makeText(AuthActivity.this, "Đăng ký thất bại: Email hoặc SĐT đã tồn tại", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RegisterResponse> call, Throwable t) {
+                Log.e("API_REG", t.getMessage());
+                Toast.makeText(AuthActivity.this, "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Hàm phụ dọn dẹp các ô nhập liệu
+    private void clearRegisterFields() {
+        edtNameReg.setText("");
+        edtEmailReg.setText("");
+        edtPasswordReg.setText("");
+        edtPhoneReg.setText("");
     }
 
     private void handleLogin() {
@@ -64,11 +128,10 @@ public class AuthActivity extends AppCompatActivity {
         String password = edtPasswordSignin.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập email và mật khẩu", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Tạo body request khớp với API: identifier và password
         Map<String, String> loginData = new HashMap<>();
         loginData.put("identifier", email);
         loginData.put("password", password);
@@ -79,8 +142,6 @@ public class AuthActivity extends AppCompatActivity {
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     LoginResponse res = response.body();
-
-                    // Lưu vào Local Storage (SharedPreferences)
                     tokenManager.saveUser(
                             res.data.token,
                             res.data.user.name,
@@ -88,21 +149,21 @@ public class AuthActivity extends AppCompatActivity {
                             res.data.user.avatarURL
                     );
 
-                    Toast.makeText(AuthActivity.this, res.message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AuthActivity.this, "Chào mừng " + res.data.user.name, Toast.LENGTH_SHORT).show();
 
-                    // Chuyển hướng sang ProfileActivity
-                    Intent intent = new Intent(AuthActivity.this, ProfileActivity.class);
+                    // Chuyển hướng về MainActivity (hoặc Profile)
+                    Intent intent = new Intent(AuthActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
-                    finish(); // Đóng màn hình Auth
+                    finish();
                 } else {
-                    Toast.makeText(AuthActivity.this, "Login Failed: Check email/password", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AuthActivity.this, "Sai tài khoản hoặc mật khẩu", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
-                Log.e("API_LOGIN", "Error: " + t.getMessage());
-                Toast.makeText(AuthActivity.this, "Server Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(AuthActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
