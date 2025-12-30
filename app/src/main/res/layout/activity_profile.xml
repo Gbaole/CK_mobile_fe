@@ -58,17 +58,19 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/tv_profile_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Alex Gamer"
+                    android:text="Name placeholder"
                     android:textColor="#FFFFFF"
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tv_profile_email"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="alex@obsidian.game"
+                    android:text="email@placeholder.com"
                     android:textColor="#999999"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -81,6 +83,7 @@
                 android:background="@drawable/bg_sign_out"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="6dp"
+                android:id="@+id/btn_sign_out"
                 android:text="Sign Out"
                 android:textColor="#FF8A8A"
                 android:textSize="13sp" />

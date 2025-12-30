@@ -60,7 +60,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="Elite Access"
+                android:text="Join us now!"
                 android:textColor="#FFFFFF"
                 android:textSize="28sp"
                 android:textStyle="bold" />
@@ -138,6 +138,7 @@
                 android:textStyle="bold" />
             <EditText
                 style="@style/EliteInput"
+                android:id="@+id/edt_email_signin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -155,6 +156,7 @@
                 android:textStyle="bold" />
             <EditText
                 style="@style/EliteInput"
+                android:id="@+id/edt_password_signin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -163,6 +165,7 @@
                 android:inputType="textPassword" />
 
             <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_signin_submit"
                 android:layout_width="match_parent"
                 android:layout_height="55dp"
                 android:layout_marginTop="32dp"

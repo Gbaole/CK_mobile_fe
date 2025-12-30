@@ -36,18 +36,17 @@ public class MainActivity extends AppCompatActivity {
 
         // --- KHỞI TẠO THANH CHIPS ---
         setupCategoryChips();
-
-        //test
-        AppCompatButton btnNavAuth = findViewById(R.id.btn_nav_auth);
-
-        btnNavAuth.setOnClickListener(v -> {
-            // Tạo Intent để chuyển từ MainActivity sang AuthActivity
-            Intent intent = new Intent(MainActivity.this, AuthActivity.class);
-            startActivity(intent);
-        });
-
     }
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 1. Dùng đúng ID trong XML là header_view
+        HeaderView header = findViewById(R.id.header_view);
+        if (header != null) {
+            // 2. Gọi hàm refresh để load lại avatar mới nhất từ SharedPreferences
+            header.refreshAvatar();
+        }
+    }
     private void setupCategoryChips() {
         LinearLayout layoutChips = findViewById(R.id.layout_chips);
         if (layoutChips == null) return;
@@ -79,4 +78,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 }
