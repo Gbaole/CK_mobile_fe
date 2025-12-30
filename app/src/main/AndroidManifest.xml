@@ -44,6 +44,13 @@
             android:label="Cart"
             android:parentActivityName=".MainActivity" />
         />
+        <activity
+            android:name=".ProductDetailActivity"
+            android:exported="false"
+            android:label="Cart"
+            android:parentActivityName=".MainActivity" />
+        />
+
     </application>
 
 </manifest>

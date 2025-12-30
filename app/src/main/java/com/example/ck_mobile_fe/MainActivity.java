@@ -1,21 +1,39 @@
 package com.example.ck_mobile_fe;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.ck_mobile_fe.components.ChipView;
-import com.example.ck_mobile_fe.models.Product;
 import com.example.ck_mobile_fe.adapters.ProductAdapter;
+import com.example.ck_mobile_fe.api.ApiService;
+import com.example.ck_mobile_fe.api.RetrofitClient;
+import com.example.ck_mobile_fe.components.ChipView;
+import com.example.ck_mobile_fe.models.CategoryResponse;
+import com.example.ck_mobile_fe.models.ProductResponse;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity {
+    private LinearLayout layoutChips;
+    private RecyclerView rcvProducts;
+    private ProductAdapter productAdapter;
+    private List<ProductResponse.Product> productList = new ArrayList<>();
+    private String selectedCategoryId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,8 +41,17 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // Xử lý tràn viền (System Bars)
-        // Lưu ý: Đảm bảo id của layout ngoài cùng trong activity_main.xml là "main"
+        // 1. Ánh xạ View
+        layoutChips = findViewById(R.id.layout_chips);
+        rcvProducts = findViewById(R.id.rcv_products);
+
+        // 2. Thiết lập RecyclerView với ProductAdapter
+        // Đảm bảo ProductAdapter của bạn nhận List<ProductResponse.Product>
+        productAdapter = new ProductAdapter(this, productList);
+        rcvProducts.setLayoutManager(new GridLayoutManager(this, 2));
+        rcvProducts.setAdapter(productAdapter);
+
+        // 3. Xử lý tràn viền
         View mainView = findViewById(R.id.main);
         if (mainView != null) {
             ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> {
@@ -34,49 +61,96 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        // --- KHỞI TẠO THANH CHIPS ---
-        setupCategoryChips();
+        // 4. Khởi chạy dữ liệu ban đầu
+        fetchCategoriesFromServer();
+        fetchProducts(null); // Load tất cả sản phẩm lần đầu
     }
+
     @Override
     protected void onResume() {
         super.onResume();
-        // 1. Dùng đúng ID trong XML là header_view
         HeaderView header = findViewById(R.id.header_view);
         if (header != null) {
-            // 2. Gọi hàm refresh để load lại avatar mới nhất từ SharedPreferences
             header.refreshAvatar();
         }
     }
-    private void setupCategoryChips() {
-        LinearLayout layoutChips = findViewById(R.id.layout_chips);
-        if (layoutChips == null) return;
 
-        for (int i = 0; i < layoutChips.getChildCount(); i++) {
-            View view = layoutChips.getChildAt(i);
-            if (view instanceof ChipView) {
-                ChipView chip = (ChipView) view;
-
-                // 1. Mặc định chọn Chip đầu tiên (index 0)
-                if (i == 0) {
-                    chip.setActive(true);
-                } else {
-                    chip.setActive(false);
+    // --- PHẦN CATEGORIES ---
+    private void fetchCategoriesFromServer() {
+        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        apiService.getCategories().enqueue(new Callback<CategoryResponse>() {
+            @Override
+            public void onResponse(Call<CategoryResponse> call, Response<CategoryResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    renderCategories(response.body().data);
                 }
-
-                // 2. Xử lý click cho từng chip
-                chip.setOnClickListener(v -> {
-                    // Reset tất cả các chip khác
-                    for (int j = 0; j < layoutChips.getChildCount(); j++) {
-                        View other = layoutChips.getChildAt(j);
-                        if (other instanceof ChipView) {
-                            ((ChipView) other).setActive(false);
-                        }
-                    }
-                    // Active chip hiện tại
-                    chip.setActive(true);
-                });
             }
+
+            @Override
+            public void onFailure(Call<CategoryResponse> call, Throwable t) {
+                Log.e("API_ERROR", "Categories fail: " + t.getMessage());
+            }
+        });
+    }
+
+    private void renderCategories(List<CategoryResponse.Category> categories) {
+        if (layoutChips == null) return;
+        layoutChips.removeAllViews();
+
+        addChipToLayout("All", null, true); // Chip mặc định
+
+        for (CategoryResponse.Category cat : categories) {
+            addChipToLayout(cat.name, cat.id, false);
         }
     }
 
+    private void addChipToLayout(String name, String id, boolean isActive) {
+        ChipView chip = new ChipView(this);
+        chip.setText(name);
+        chip.setTag(id);
+        chip.setActive(isActive);
+
+        chip.setOnClickListener(v -> {
+            for (int i = 0; i < layoutChips.getChildCount(); i++) {
+                View child = layoutChips.getChildAt(i);
+                if (child instanceof ChipView) ((ChipView) child).setActive(false);
+            }
+            chip.setActive(true);
+
+            selectedCategoryId = (String) chip.getTag();
+            fetchProducts(selectedCategoryId); // Gọi hàm lấy sản phẩm khi đổi chip
+        });
+
+        layoutChips.addView(chip);
+    }
+
+    // --- PHẦN PRODUCTS ---
+    private void fetchProducts(String categoryId) {
+        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        Call<ProductResponse> call;
+
+        if (categoryId == null) {
+            call = apiService.getAllProducts(); // GET /products
+        } else {
+            call = apiService.getProductsByCategory(categoryId); // GET /categories/{id}/products
+        }
+
+        call.enqueue(new Callback<ProductResponse>() {
+            @Override
+            public void onResponse(Call<ProductResponse> call, Response<ProductResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    productList.clear();
+                    productList.addAll(response.body().data);
+                    productAdapter.notifyDataSetChanged(); // Cập nhật giao diện
+                } else {
+                    Toast.makeText(MainActivity.this, "Cannot fetch products", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ProductResponse> call, Throwable t) {
+                Log.e("API_ERROR", "Products fail: " + t.getMessage());
+            }
+        });
+    }
 }

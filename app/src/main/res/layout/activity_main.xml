@@ -104,32 +104,6 @@
                     android:orientation="horizontal"
                     android:divider="@drawable/space_divider_horizontal"
                     android:showDividers="middle">
-
-                    <com.example.ck_mobile_fe.components.ChipView
-                        android:id="@+id/chip_all"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="All" />
-
-                    <com.example.ck_mobile_fe.components.ChipView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Arrivals" />
-
-                    <com.example.ck_mobile_fe.components.ChipView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Console" />
-
-                    <com.example.ck_mobile_fe.components.ChipView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Accessories" />
-
-                    <com.example.ck_mobile_fe.components.ChipView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="VR" />
                 </LinearLayout>
             </HorizontalScrollView>
 
