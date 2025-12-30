@@ -61,7 +61,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void fetchProductDetail(String id) {
-        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        ApiService apiService = RetrofitClient.getClient(this).create(ApiService.class);
         apiService.getProductDetail(id).enqueue(new Callback<ProductDetailResponse>() {
             @Override
             public void onResponse(Call<ProductDetailResponse> call, Response<ProductDetailResponse> response) {

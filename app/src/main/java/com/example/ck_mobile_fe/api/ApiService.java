@@ -13,7 +13,9 @@ import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
@@ -23,7 +25,12 @@ public interface ApiService {
     Call<RegisterResponse> register(@Body Map<String, String> userData);
     @POST("auth/login")
     Call<LoginResponse> login(@Body Map<String, String> credentials);
-
+    @Multipart
+    @PATCH("auth/update-avatar")
+    Call<LoginResponse> uploadAvatar(
+            @Part("userId") RequestBody userId,
+            @Part MultipartBody.Part image
+    );
     @GET("categories")
     Call<CategoryResponse> getCategories();
 

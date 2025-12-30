@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
     // --- PHẦN CATEGORIES ---
     private void fetchCategoriesFromServer() {
-        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        ApiService apiService = RetrofitClient.getClient(this).create(ApiService.class);
         apiService.getCategories().enqueue(new Callback<CategoryResponse>() {
             @Override
             public void onResponse(Call<CategoryResponse> call, Response<CategoryResponse> response) {
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
     // --- PHẦN PRODUCTS ---
     private void fetchProducts(String categoryId) {
-        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        ApiService apiService = RetrofitClient.getClient(this).create(ApiService.class);
         Call<ProductResponse> call;
 
         if (categoryId == null) {

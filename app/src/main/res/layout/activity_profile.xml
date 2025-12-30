@@ -12,8 +12,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="20dp"
-        android:layout_marginTop="40dp"
-        >
+        android:layout_marginTop="40dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -43,18 +42,38 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="40dp">
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/profile_image"
+            <RelativeLayout
+                android:id="@+id/avatar_container"
                 android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@drawable/ic_default_avatar" />
+                android:layout_height="80dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/profile_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_default_avatar"
+                    app:civ_border_color="#333333"
+                    app:civ_border_width="1dp"/>
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_camera"
+                    android:background="@drawable/bg_circle_black"
+                    android:padding="5dp"
+                    app:tint="#FFFFFF" />
+            </RelativeLayout>
 
             <LinearLayout
+                android:id="@+id/info_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="16dp"
-                android:layout_toEndOf="@id/profile_image"
+                android:layout_toEndOf="@id/avatar_container"
+                android:layout_toStartOf="@id/btn_sign_out"
                 android:orientation="vertical">
 
                 <TextView
@@ -63,8 +82,10 @@
                     android:layout_height="wrap_content"
                     android:text="Name placeholder"
                     android:textColor="#FFFFFF"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
 
                 <TextView
                     android:id="@+id/tv_profile_email"
@@ -72,21 +93,24 @@
                     android:layout_height="wrap_content"
                     android:text="email@placeholder.com"
                     android:textColor="#999999"
-                    android:textSize="14sp" />
+                    android:textSize="13sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
             </LinearLayout>
 
             <TextView
+                android:id="@+id/btn_sign_out"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="@drawable/bg_sign_out"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="6dp"
-                android:id="@+id/btn_sign_out"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp"
                 android:text="Sign Out"
                 android:textColor="#FF8A8A"
-                android:textSize="13sp" />
+                android:textSize="12sp"
+                android:textStyle="bold" />
         </RelativeLayout>
 
         <TextView

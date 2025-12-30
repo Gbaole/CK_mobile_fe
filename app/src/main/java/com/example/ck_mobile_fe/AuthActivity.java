@@ -88,7 +88,7 @@ public class AuthActivity extends AppCompatActivity {
         regData.put("phoneNumber", phone);
         regData.put("shippingAddress", address);
 
-        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        ApiService apiService = RetrofitClient.getClient(this).create(ApiService.class);
         apiService.register(regData).enqueue(new Callback<RegisterResponse>() {
             @Override
             public void onResponse(Call<RegisterResponse> call, Response<RegisterResponse> response) {
@@ -131,7 +131,7 @@ public class AuthActivity extends AppCompatActivity {
         String password = edtPasswordSignin.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập email và mật khẩu", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập thông tin", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -139,38 +139,31 @@ public class AuthActivity extends AppCompatActivity {
         loginData.put("identifier", email);
         loginData.put("password", password);
 
-        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        ApiService apiService = RetrofitClient.getClient(this).create(ApiService.class);
         apiService.login(loginData).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     LoginResponse res = response.body();
-                    tokenManager.saveUser(
-                            res.data.token,
-                            res.data.user.name,
-                            res.data.user.email,
-                            res.data.user.avatarURL
-                    );
 
+                    String token = res.data.token;
+                    String name = res.data.user.name;
+                    String email = res.data.user.email;
+                    String avatar = res.data.user.avatarURL;
+                    String userId = res.data.user.id;
+
+                    tokenManager.saveUser(token, name, email, avatar, userId);
                     Toast.makeText(AuthActivity.this, "Chào mừng " + res.data.user.name, Toast.LENGTH_SHORT).show();
 
-                    // Chuyển hướng về MainActivity (hoặc Profile)
-                    Intent intent = new Intent(AuthActivity.this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
+                    // Chuyển màn hình
+                    startActivity(new Intent(AuthActivity.this, MainActivity.class));
                     finish();
-                } else {
-                    Toast.makeText(AuthActivity.this, "Sai tài khoản hoặc mật khẩu", Toast.LENGTH_SHORT).show();
                 }
             }
-
             @Override
-            public void onFailure(Call<LoginResponse> call, Throwable t) {
-                Toast.makeText(AuthActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+            public void onFailure(Call<LoginResponse> call, Throwable t) { /* ... */ }
         });
     }
-
     private void showView(View viewToShow) {
         layoutWelcome.setVisibility(View.GONE);
         layoutSignin.setVisibility(View.GONE);
