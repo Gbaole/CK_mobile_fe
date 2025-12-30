@@ -22,6 +22,7 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/tv_cart_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="PlayStation 5 Pro"
@@ -30,6 +31,7 @@
             android:textStyle="bold" />
 
         <TextView
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="SONY"
@@ -37,6 +39,7 @@
             android:textSize="14sp" />
 
         <TextView
+            android:id="@+id/tv_cart_price"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -47,6 +50,7 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/tv_cart_qty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
@@ -56,6 +60,7 @@
         android:textColor="#FFFFFF" />
 
     <ImageView
+        android:id="@+id/btn_cart_delete"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_alignParentEnd="true"

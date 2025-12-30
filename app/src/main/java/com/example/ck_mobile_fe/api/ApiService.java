@@ -1,5 +1,6 @@
 package com.example.ck_mobile_fe.api;
 
+import com.example.ck_mobile_fe.models.CartResponse;
 import com.example.ck_mobile_fe.models.CategoryResponse;
 import com.example.ck_mobile_fe.models.LoginResponse;
 import com.example.ck_mobile_fe.models.ProductDetailResponse;
@@ -12,6 +13,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
@@ -42,4 +44,19 @@ public interface ApiService {
     Call<ProductResponse> getProductsByCategory(@Path("id") String categoryId);
     @GET("products/{id}")
     Call<ProductDetailResponse> getProductDetail(@Path("id") String productId);
+
+    @GET("cart")
+    Call<CartResponse> getMyCart(@Header("Authorization") String token);
+
+    @POST("cart")
+    Call<CartResponse> addToCart(
+            @Header("Authorization") String token,
+            @Body Map<String, Object> body
+    );
+
+    @DELETE("cart/{productId}")
+    Call<CartResponse> removeFromCart(
+            @Header("Authorization") String token,
+            @Path("productId") String productId
+    );
 }

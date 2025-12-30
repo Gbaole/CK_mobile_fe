@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.ck_mobile_fe.api.ApiService;
 import com.example.ck_mobile_fe.api.RetrofitClient;
 import com.example.ck_mobile_fe.models.LoginResponse;
-import com.example.ck_mobile_fe.models.RegisterResponse; // Đảm bảo đã import
+import com.example.ck_mobile_fe.models.RegisterResponse;
 import com.example.ck_mobile_fe.utils.TokenManager;
 
 import java.util.HashMap;
