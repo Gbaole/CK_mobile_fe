@@ -20,10 +20,16 @@ import java.util.List;
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
     private List<ProductResponse.Product> list;
     private Context context;
+    private OnAddToCartClickListener addToCartListener;
 
-    public ProductAdapter(Context context, List<ProductResponse.Product> list) {
+    public interface OnAddToCartClickListener {
+        void onAddClick(ProductResponse.Product product);
+    }
+
+    public ProductAdapter(Context context, List<ProductResponse.Product> list, OnAddToCartClickListener listener) {
         this.context = context;
         this.list = list;
+        this.addToCartListener = listener;
     }
 
     @NonNull
@@ -37,13 +43,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ProductResponse.Product p = list.get(position);
 
-        // 1. Gán dữ liệu Text
         holder.txtName.setText(p.name);
         holder.txtBrand.setText(p.brand != null ? p.brand.name : "Unknown");
         holder.txtPrice.setText("$" + p.price);
         holder.txtRating.setText("Sold: " + p.sold);
 
-        // 2. Load ảnh từ URL bằng Glide
         if (p.images != null && !p.images.isEmpty()) {
             Glide.with(context)
                     .load(p.images.get(0))
@@ -52,12 +56,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
                     .into(holder.imgProduct);
         }
 
-        // --- 3. CẬP NHẬT LỆNH CLICK TẠI ĐÂY ---
+        // Chuyển sang màn hình chi tiết
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ProductDetailActivity.class);
-            // Truyền ID sản phẩm để bên Activity Detail dùng nó gọi API
             intent.putExtra("PRODUCT_ID", p.id);
             context.startActivity(intent);
+        });
+
+        // Xử lý nút thêm vào giỏ hàng
+        holder.btnAddCart.setOnClickListener(v -> {
+            if (addToCartListener != null) {
+                addToCartListener.onAddClick(p); // Sửa 'product' thành 'p'
+            }
         });
     }
 
@@ -65,8 +75,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     public int getItemCount() { return list != null ? list.size() : 0; }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView imgProduct;
+        ImageView imgProduct, btnAddCart; // Phải khai báo btnAddCart ở đây
         TextView txtName, txtBrand, txtPrice, txtRating;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imgProduct = itemView.findViewById(R.id.img_product);
@@ -74,6 +85,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             txtBrand = itemView.findViewById(R.id.txt_brand);
             txtPrice = itemView.findViewById(R.id.txt_price);
             txtRating = itemView.findViewById(R.id.txt_rating);
+            btnAddCart = itemView.findViewById(R.id.btn_add);
         }
     }
 }

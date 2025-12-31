@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp"
@@ -9,55 +10,86 @@
         android:id="@+id/img_product"
         android:layout_width="70dp"
         android:layout_height="70dp"
-        android:src="@drawable/ps5_pro"
-        android:scaleType="centerCrop"
         android:background="#1A1A1A"
-        xmlns:app="http://schemas.android.com/apk/res-auto" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/img_product"
-        android:layout_marginStart="16dp"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/tv_cart_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="PlayStation 5 Pro"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SONY"
-            android:textColor="#666666"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/tv_cart_price"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="$699.99"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+        android:scaleType="centerCrop"
+        android:src="@drawable/ps5_pro"
+         /> <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_toEndOf="@id/img_product"
+    android:layout_toStartOf="@id/layout_qty_control"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="8dp"
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tv_cart_qty"
+        android:id="@+id/tv_cart_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="PlayStation 5 Pro"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SONY"
+        android:textColor="#666666"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/tv_cart_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="$699.99"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+</LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_qty_control"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/btn_cart_delete"
         android:layout_centerVertical="true"
-        android:layout_marginEnd="60dp"
-        android:text="Qty: 1"
-        android:textColor="#FFFFFF" />
+        android:layout_marginEnd="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:background="@drawable/bg_qty_selector"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp">
+
+        <ImageView
+            android:id="@+id/btn_minus"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_minus"
+            app:tint="#FFFFFF" />
+
+        <TextView
+            android:id="@+id/tv_cart_qty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:minWidth="20dp"
+            android:gravity="center"
+            android:text="1"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/btn_plus"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_plus"
+            app:tint="#FFFFFF" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/btn_cart_delete"
@@ -66,6 +98,5 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:src="@drawable/ic_trash"
-        app:tint="#FF4444"
-        xmlns:app="http://schemas.android.com/apk/res-auto" />
+        app:tint="#FF4444" />
 </RelativeLayout>

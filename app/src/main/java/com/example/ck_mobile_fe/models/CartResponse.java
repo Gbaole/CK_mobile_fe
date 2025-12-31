@@ -19,6 +19,6 @@ public class CartResponse {
         public String name;
         public int quantity;
         public double price;
-        public String _id; // id của dòng item trong giỏ
+        public String _id;
     }
 }

@@ -18,11 +18,15 @@ import com.example.ck_mobile_fe.adapters.ProductAdapter;
 import com.example.ck_mobile_fe.api.ApiService;
 import com.example.ck_mobile_fe.api.RetrofitClient;
 import com.example.ck_mobile_fe.components.ChipView;
+import com.example.ck_mobile_fe.models.CartResponse;
 import com.example.ck_mobile_fe.models.CategoryResponse;
 import com.example.ck_mobile_fe.models.ProductResponse;
+import com.example.ck_mobile_fe.utils.TokenManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private ProductAdapter productAdapter;
     private List<ProductResponse.Product> productList = new ArrayList<>();
     private String selectedCategoryId = null;
+    private TokenManager tokenManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,13 +46,17 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        tokenManager = new TokenManager(this);
+
         // 1. Ánh xạ View
         layoutChips = findViewById(R.id.layout_chips);
         rcvProducts = findViewById(R.id.rcv_products);
 
-        // 2. Thiết lập RecyclerView với ProductAdapter
-        // Đảm bảo ProductAdapter của bạn nhận List<ProductResponse.Product>
-        productAdapter = new ProductAdapter(this, productList);
+        // 2. Thiết lập RecyclerView với ProductAdapter và sự kiện Add to Cart
+        productAdapter = new ProductAdapter(this, productList, product -> {
+            // Khi bấm nút add trên item, gọi hàm xử lý API
+            addProductToCart(product.id);
+        });
         rcvProducts.setLayoutManager(new GridLayoutManager(this, 2));
         rcvProducts.setAdapter(productAdapter);
 
@@ -63,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 4. Khởi chạy dữ liệu ban đầu
         fetchCategoriesFromServer();
-        fetchProducts(null); // Load tất cả sản phẩm lần đầu
+        fetchProducts(null);
     }
 
     @Override
@@ -73,6 +82,41 @@ public class MainActivity extends AppCompatActivity {
         if (header != null) {
             header.refreshAvatar();
         }
+    }
+
+    // --- PHẦN GIỎ HÀNG (ADD TO CART) ---
+    private void addProductToCart(String productId) {
+        String token = tokenManager.getToken();
+        if (token == null || token.isEmpty()) {
+            Toast.makeText(this, "Vui lòng đăng nhập để mua hàng!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ApiService apiService = RetrofitClient.getClient(this).create(ApiService.class);
+
+        // Tạo body JSON: { "productId": "...", "quantity": 1 }
+        Map<String, Object> body = new HashMap<>();
+        body.put("productId", productId);
+        body.put("quantity", 1);
+
+        String authHeader = "Bearer " + token;
+
+        apiService.addToCart(authHeader, body).enqueue(new Callback<CartResponse>() {
+            @Override
+            public void onResponse(Call<CartResponse> call, Response<CartResponse> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(MainActivity.this, "Đã thêm vào giỏ hàng!", Toast.LENGTH_SHORT).show();
+                    // Optional: Cập nhật Badge trên icon giỏ hàng nếu có
+                } else {
+                    Toast.makeText(MainActivity.this, "Lỗi: Không thể thêm sản phẩm", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CartResponse> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     // --- PHẦN CATEGORIES ---
@@ -97,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         if (layoutChips == null) return;
         layoutChips.removeAllViews();
 
-        addChipToLayout("All", null, true); // Chip mặc định
+        addChipToLayout("All", null, true);
 
         for (CategoryResponse.Category cat : categories) {
             addChipToLayout(cat.name, cat.id, false);
@@ -118,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
             chip.setActive(true);
 
             selectedCategoryId = (String) chip.getTag();
-            fetchProducts(selectedCategoryId); // Gọi hàm lấy sản phẩm khi đổi chip
+            fetchProducts(selectedCategoryId);
         });
 
         layoutChips.addView(chip);
@@ -130,9 +174,9 @@ public class MainActivity extends AppCompatActivity {
         Call<ProductResponse> call;
 
         if (categoryId == null) {
-            call = apiService.getAllProducts(); // GET /products
+            call = apiService.getAllProducts();
         } else {
-            call = apiService.getProductsByCategory(categoryId); // GET /categories/{id}/products
+            call = apiService.getProductsByCategory(categoryId);
         }
 
         call.enqueue(new Callback<ProductResponse>() {
@@ -141,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     productList.clear();
                     productList.addAll(response.body().data);
-                    productAdapter.notifyDataSetChanged(); // Cập nhật giao diện
+                    productAdapter.notifyDataSetChanged();
                 } else {
                     Toast.makeText(MainActivity.this, "Cannot fetch products", Toast.LENGTH_SHORT).show();
                 }

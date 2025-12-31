@@ -59,4 +59,10 @@ public interface ApiService {
             @Header("Authorization") String token,
             @Path("productId") String productId
     );
+
+    @PATCH("cart/update-quantity")
+    Call<CartResponse> updateCartQuantity(
+            @Header("Authorization") String token,
+            @Body Map<String, Object> body
+    );
 }
