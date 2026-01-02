@@ -16,8 +16,8 @@ public class LoginResponse {
         @SerializedName("_id")
         public String id;
         public String name;
-        public String email;
         public String avatarURL;
+
     }
 
     public static class User {
@@ -26,5 +26,6 @@ public class LoginResponse {
         public String name;
         public String email;
         public String avatarURL;
+        public String shippingAddress;
     }
 }

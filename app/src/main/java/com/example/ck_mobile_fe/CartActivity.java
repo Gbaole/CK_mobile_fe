@@ -7,6 +7,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.text.DecimalFormat;
@@ -24,6 +25,7 @@ public class CartActivity extends AppCompatActivity {
     private TextView tvTotal;
     private ApiService apiService;
     private TokenManager tokenManager;
+    private AppCompatButton btnCheckout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +43,51 @@ public class CartActivity extends AppCompatActivity {
         findViewById(R.id.btn_close_cart).setOnClickListener(v -> finish());
 
         loadCart();
-    }
+        btnCheckout = findViewById(R.id.btn_checkout);
 
+        btnCheckout.setOnClickListener(v -> handleCheckout());
+    }
+    private void handleCheckout() {
+        String token = "Bearer " + tokenManager.getToken();
+        String address = tokenManager.getAddress();
+
+        // Kiểm tra nếu địa chỉ trống
+        if (address == null || address.isEmpty()) {
+            Toast.makeText(this, "Vui lòng cập nhật địa chỉ giao hàng!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Map<String, String> body = new HashMap<>();
+        body.put("address", address);
+
+        // Hiển thị trạng thái đang xử lý (tùy chọn)
+        btnCheckout.setEnabled(false);
+        btnCheckout.setText("Processing...");
+
+        apiService.checkout(token, body).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                btnCheckout.setEnabled(true);
+                btnCheckout.setText("Checkout Now");
+
+                if (response.isSuccessful()) {
+                    Toast.makeText(CartActivity.this, "Đặt hàng thành công!", Toast.LENGTH_LONG).show();
+
+
+                    finish();
+                } else {
+                    Toast.makeText(CartActivity.this, "Checkout thất bại!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                btnCheckout.setEnabled(true);
+                btnCheckout.setText("Checkout Now");
+                Toast.makeText(CartActivity.this, "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     private void loadCart() {
         String token = "Bearer " + tokenManager.getToken();
         apiService.getMyCart(token).enqueue(new Callback<CartResponse>() {

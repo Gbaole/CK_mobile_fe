@@ -3,6 +3,7 @@ package com.example.ck_mobile_fe.api;
 import com.example.ck_mobile_fe.models.CartResponse;
 import com.example.ck_mobile_fe.models.CategoryResponse;
 import com.example.ck_mobile_fe.models.LoginResponse;
+import com.example.ck_mobile_fe.models.OrderResponse;
 import com.example.ck_mobile_fe.models.ProductDetailResponse;
 import com.example.ck_mobile_fe.models.ProductResponse;
 import com.example.ck_mobile_fe.models.RegisterResponse;
@@ -64,5 +65,14 @@ public interface ApiService {
     Call<CartResponse> updateCartQuantity(
             @Header("Authorization") String token,
             @Body Map<String, Object> body
+    );
+
+    @GET("order/my-orders")
+    Call<OrderResponse> getMyOrders(@Header("Authorization") String token);
+
+    @POST("order/check-out")
+    Call<Map<String, Object>> checkout(
+            @Header("Authorization") String token,
+            @Body Map<String, String> body
     );
 }

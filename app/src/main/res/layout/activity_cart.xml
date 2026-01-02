@@ -72,6 +72,7 @@
         </RelativeLayout>
 
         <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_checkout"
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:background="@drawable/bg_btn_checkout"

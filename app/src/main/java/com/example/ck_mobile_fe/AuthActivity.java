@@ -151,8 +151,9 @@ public class AuthActivity extends AppCompatActivity {
                     String email = res.data.user.email;
                     String avatar = res.data.user.avatarURL;
                     String userId = res.data.user.id;
+                    String address = res.data.user.shippingAddress;
 
-                    tokenManager.saveUser(token, name, email, avatar, userId);
+                    tokenManager.saveUser(token, name, email, avatar, userId, address);
                     Toast.makeText(AuthActivity.this, "Chào mừng " + res.data.user.name, Toast.LENGTH_SHORT).show();
 
                     // Chuyển màn hình

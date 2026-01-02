@@ -17,12 +17,16 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.example.ck_mobile_fe.adapters.OrderAdapter;
 import com.example.ck_mobile_fe.api.ApiService;
 import com.example.ck_mobile_fe.api.RetrofitClient;
 import com.example.ck_mobile_fe.models.LoginResponse;
+import com.example.ck_mobile_fe.models.OrderResponse;
 import com.example.ck_mobile_fe.utils.TokenManager;
 
 import java.io.File;
@@ -44,9 +48,14 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView tvName, tvEmail, btnSignOut;
     private CircleImageView imgProfile;
     private ImageView btnClose;
+    private RecyclerView rcvOrders;
+    private OrderAdapter orderAdapter;
+
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private SharedPreferences sharedPreferences;
     private TokenManager tokenManager;
+    private ApiService apiService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,31 +65,33 @@ public class ProfileActivity extends AppCompatActivity {
         loadUserData();
         setupImagePicker();
 
-        // Nút quay lại
+        // Gọi API lấy đơn hàng ngay khi vào Profile
+        fetchOrders();
+
+        // Listeners
         btnClose.setOnClickListener(v -> finish());
-
-        // Nút đăng xuất
         btnSignOut.setOnClickListener(v -> handleSignOut());
-
-        // Click vào ảnh để chọn ảnh mới
         imgProfile.setOnClickListener(v -> checkPermissionAndOpenGallery());
     }
 
     private void initViews() {
         tokenManager = new TokenManager(this);
+        apiService = RetrofitClient.getClient(this).create(ApiService.class);
+        sharedPreferences = getSharedPreferences("LoginPref", MODE_PRIVATE);
+
         btnClose = findViewById(R.id.btn_close);
         tvName = findViewById(R.id.tv_profile_name);
         tvEmail = findViewById(R.id.tv_profile_email);
         imgProfile = findViewById(R.id.profile_image);
         btnSignOut = findViewById(R.id.btn_sign_out);
-        sharedPreferences = getSharedPreferences("LoginPref", MODE_PRIVATE);
+
+        // Cấu hình RecyclerView
+        rcvOrders = findViewById(R.id.rcv_orders);
+        rcvOrders.setLayoutManager(new LinearLayoutManager(this));
+        rcvOrders.setNestedScrollingEnabled(false); // Quan trọng để cuộn mượt trong NestedScrollView
     }
 
     private void loadUserData() {
-        String name = sharedPreferences.getString("name", "Gamer");
-        String email = sharedPreferences.getString("email", "no-email@obsidian.game");
-        String avatarUrl = sharedPreferences.getString("avatar", "");
-
         tvName.setText(tokenManager.getName());
         tvEmail.setText(tokenManager.getEmail());
 
@@ -91,6 +102,28 @@ public class ProfileActivity extends AppCompatActivity {
                 .into(imgProfile);
     }
 
+    private void fetchOrders() {
+        String token = "Bearer " + tokenManager.getToken();
+
+        apiService.getMyOrders(token).enqueue(new Callback<OrderResponse>() {
+            @Override
+            public void onResponse(Call<OrderResponse> call, Response<OrderResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    orderAdapter = new OrderAdapter(response.body().data);
+                    rcvOrders.setAdapter(orderAdapter);
+                } else {
+                    Log.e("ORDER_ERR", "Response not successful");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<OrderResponse> call, Throwable t) {
+                Toast.makeText(ProfileActivity.this, "Error fetching orders", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // --- LOGIC XỬ LÝ AVATAR & SIGN OUT GIỮ NGUYÊN ---
     private void setupImagePicker() {
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -106,12 +139,9 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void checkPermissionAndOpenGallery() {
-        String permission;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permission = Manifest.permission.READ_MEDIA_IMAGES;
-        } else {
-            permission = Manifest.permission.READ_EXTERNAL_STORAGE;
-        }
+        String permission = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                ? Manifest.permission.READ_MEDIA_IMAGES
+                : Manifest.permission.READ_EXTERNAL_STORAGE;
 
         if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
             openGallery();
@@ -124,11 +154,10 @@ public class ProfileActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         imagePickerLauncher.launch(intent);
     }
+
     private void uploadAvatar(Uri uri) {
         try {
-            // 1. Lấy UserId từ SharedPreferences
             String userId = tokenManager.getUserId();
-            // 2. TẠO FILE TẠM VÀ COPY DỮ LIỆU
             File file = new File(getCacheDir(), "temp_avatar.jpg");
             InputStream inputStream = getContentResolver().openInputStream(uri);
             OutputStream outputStream = new FileOutputStream(file);
@@ -142,30 +171,18 @@ public class ProfileActivity extends AppCompatActivity {
                 inputStream.close();
             }
 
-            // 3. Tạo RequestBody cho Multipart
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
             MultipartBody.Part imagePart = MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
             RequestBody userIdPart = RequestBody.create(MediaType.parse("text/plain"), userId);
-
-            // 4. Gọi API
-            ApiService apiService = RetrofitClient.getClient(this).create(ApiService.class);
 
             apiService.uploadAvatar(userIdPart, imagePart).enqueue(new Callback<LoginResponse>() {
                 @Override
                 public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         String newAvatarUrl = response.body().data.avatarURL;
+                        tokenManager.saveUser(tokenManager.getToken(), tokenManager.getName(),
+                                tokenManager.getEmail(), newAvatarUrl, tokenManager.getUserId(), tokenManager.getAddress());
 
-                        // Cập nhật lại TokenManager (Ảnh mới)
-                        tokenManager.saveUser(
-                                tokenManager.getToken(),
-                                tokenManager.getName(),
-                                tokenManager.getEmail(),
-                                newAvatarUrl,
-                                tokenManager.getUserId()
-                        );
-
-                        // Cập nhật UI
                         Glide.with(ProfileActivity.this)
                                 .load(newAvatarUrl)
                                 .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -175,17 +192,17 @@ public class ProfileActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onFailure(Call<LoginResponse> call, Throwable t) {
-                    // Xử lý khi không có mạng, timeout hoặc server không phản hồi
-                    Toast.makeText(ProfileActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                    Log.e("UPLOAD_ERR", t.getMessage());
+                    Toast.makeText(ProfileActivity.this, "Upload failed", Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (IOException e) { e.printStackTrace(); }
     }
+
     private void handleSignOut() {
         tokenManager.clear();
         Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        finish();
     }
 }

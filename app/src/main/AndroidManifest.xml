@@ -41,15 +41,16 @@
         <activity
             android:name=".AuthActivity"
             android:exported="false"
-            android:label="Cart"
+            android:label="Auth"
             android:parentActivityName=".MainActivity" />
         />
         <activity
             android:name=".ProductDetailActivity"
             android:exported="false"
-            android:label="Cart"
+            android:label="ProductDetail"
             android:parentActivityName=".MainActivity" />
         />
+
 
     </application>
 
