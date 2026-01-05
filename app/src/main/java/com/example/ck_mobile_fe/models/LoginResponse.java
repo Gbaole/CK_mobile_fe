@@ -8,24 +8,25 @@ public class LoginResponse {
     public Data data;
 
     public static class Data {
-        // Dành cho Login (Cấu trúc có lồng 'user')
         public User user;
         public String token;
 
-        // Dành cho Update Avatar (Cấu trúc phẳng - Flat)
-        @SerializedName("_id")
+        @SerializedName("id")
         public String id;
         public String name;
         public String avatarURL;
-
+        public String phoneNumber;
+        public String shippingAddress;
+        public String email;
     }
 
     public static class User {
-        @SerializedName("_id")
+        @SerializedName("id")
         public String id;
         public String name;
         public String email;
         public String avatarURL;
         public String shippingAddress;
+        public String phoneNumber;
     }
 }

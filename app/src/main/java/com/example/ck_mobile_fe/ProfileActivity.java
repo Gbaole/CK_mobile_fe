@@ -9,7 +9,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +38,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.MediaType;
@@ -45,7 +51,7 @@ import retrofit2.Response;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private TextView tvName, tvEmail, btnSignOut;
+    private TextView tvName, tvEmail, tvPhone, tvAddress, btnSignOut;
     private CircleImageView imgProfile;
     private ImageView btnClose;
     private RecyclerView rcvOrders;
@@ -54,18 +60,18 @@ public class ProfileActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private SharedPreferences sharedPreferences;
     private TokenManager tokenManager;
+    private LinearLayout layoutAddressClick;
     private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
-
         initViews();
-        loadUserData();
-        setupImagePicker();
 
-        // Gọi API lấy đơn hàng ngay khi vào Profile
+        findViewById(R.id.info_container).setOnClickListener(v -> showEditProfileDialog());
+        layoutAddressClick.setOnClickListener(v -> showEditProfileDialog());        loadUserData();
+        setupImagePicker();
         fetchOrders();
 
         // Listeners
@@ -75,6 +81,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        layoutAddressClick = findViewById(R.id.layout_address_click);
         tokenManager = new TokenManager(this);
         apiService = RetrofitClient.getClient(this).create(ApiService.class);
         sharedPreferences = getSharedPreferences("LoginPref", MODE_PRIVATE);
@@ -82,6 +89,8 @@ public class ProfileActivity extends AppCompatActivity {
         btnClose = findViewById(R.id.btn_close);
         tvName = findViewById(R.id.tv_profile_name);
         tvEmail = findViewById(R.id.tv_profile_email);
+        tvPhone = findViewById(R.id.tv_profile_phone);
+        tvAddress = findViewById(R.id.tv_profile_address);
         imgProfile = findViewById(R.id.profile_image);
         btnSignOut = findViewById(R.id.btn_sign_out);
 
@@ -94,7 +103,13 @@ public class ProfileActivity extends AppCompatActivity {
     private void loadUserData() {
         tvName.setText(tokenManager.getName());
         tvEmail.setText(tokenManager.getEmail());
-
+        tvPhone.setText(tokenManager.getPhone());
+        String address = tokenManager.getAddress();
+        if (address != null && !address.isEmpty()) {
+            tvAddress.setText(address);
+        } else {
+            tvAddress.setText("Chưa cập nhật địa chỉ");
+        }
         Glide.with(this)
                 .load(tokenManager.getAvatar())
                 .placeholder(R.drawable.ic_default_avatar)
@@ -181,14 +196,17 @@ public class ProfileActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         String newAvatarUrl = response.body().data.avatarURL;
                         tokenManager.saveUser(tokenManager.getToken(), tokenManager.getName(),
-                                tokenManager.getEmail(), newAvatarUrl, tokenManager.getUserId(), tokenManager.getAddress());
+                                tokenManager.getEmail(), newAvatarUrl, tokenManager.getUserId(), tokenManager.getAddress(), tokenManager.getPhone());
 
                         Glide.with(ProfileActivity.this)
                                 .load(newAvatarUrl)
                                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                                 .skipMemoryCache(true)
                                 .into(imgProfile);
+                    } else {
+                        Toast.makeText(ProfileActivity.this, "Upload failed", Toast.LENGTH_SHORT).show();
                     }
+
                 }
                 @Override
                 public void onFailure(Call<LoginResponse> call, Throwable t) {
@@ -197,7 +215,6 @@ public class ProfileActivity extends AppCompatActivity {
             });
         } catch (IOException e) { e.printStackTrace(); }
     }
-
     private void handleSignOut() {
         tokenManager.clear();
         Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
@@ -205,4 +222,79 @@ public class ProfileActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+    private void showEditProfileDialog() {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_profile, null);
+        builder.setView(dialogView);
+
+        EditText edtName = dialogView.findViewById(R.id.edt_edit_name);
+        EditText edtEmail = dialogView.findViewById(R.id.edt_edit_email);
+        EditText edtPhone = dialogView.findViewById(R.id.edt_edit_phone);
+        EditText edtAddress = dialogView.findViewById(R.id.edt_edit_address);
+        Button btnSave = dialogView.findViewById(R.id.btn_save_profile);
+
+        // load dữ liệu từ TokenManager
+        edtName.setText(tokenManager.getName());
+        edtEmail.setText(tokenManager.getEmail());
+        edtPhone.setText(tokenManager.getPhone());
+        edtAddress.setText(tokenManager.getAddress());
+
+        android.app.AlertDialog dialog = builder.create();
+        dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        btnSave.setOnClickListener(v -> {
+            String name = edtName.getText().toString().trim();
+            String email = edtEmail.getText().toString().trim();
+            String phone = edtPhone.getText().toString().trim();
+            String address = edtAddress.getText().toString().trim();
+
+            Map<String, String> body = new HashMap<>();
+            body.put("name", name);
+            body.put("email", email);
+            body.put("phoneNumber", phone);
+            body.put("shippingAddress", address);
+
+            String token = "Bearer " + tokenManager.getToken();
+            apiService.updateProfile(token, body).enqueue(new Callback<LoginResponse>() {
+                @Override
+                public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        LoginResponse.Data updatedData = response.body().data;
+
+                        // Lưu lại vào SharedPreferences
+                        tokenManager.saveUser(
+                                tokenManager.getToken(),
+                                updatedData.name,
+                                updatedData.email,
+                                updatedData.avatarURL,
+                                updatedData.id,
+                                updatedData.shippingAddress,
+                                updatedData.phoneNumber
+                        );
+
+                        loadUserData(); // Cập nhật lại UI Profile
+                        dialog.dismiss();
+                        Toast.makeText(ProfileActivity.this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        try {
+                            String errorMsg = response.errorBody().string();
+                            Log.e("UPDATE_PROFILE_ERROR", "Server: " + errorMsg);
+                            Toast.makeText(ProfileActivity.this, "Lỗi 400: " + errorMsg, Toast.LENGTH_LONG).show();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<LoginResponse> call, Throwable t) {
+                    Toast.makeText(ProfileActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
 }

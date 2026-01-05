@@ -34,6 +34,11 @@ public interface ApiService {
             @Part("userId") RequestBody userId,
             @Part MultipartBody.Part image
     );
+    @PATCH("auth/update-profile")
+    Call<LoginResponse> updateProfile(
+            @Header("Authorization") String token,
+            @Body Map<String, String> body
+    );
     @GET("categories")
     Call<CategoryResponse> getCategories();
 

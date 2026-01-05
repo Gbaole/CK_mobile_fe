@@ -152,13 +152,16 @@ public class AuthActivity extends AppCompatActivity {
                     String avatar = res.data.user.avatarURL;
                     String userId = res.data.user.id;
                     String address = res.data.user.shippingAddress;
+                    String phoneNumber = res.data.user.phoneNumber;
 
-                    tokenManager.saveUser(token, name, email, avatar, userId, address);
+                    tokenManager.saveUser(token, name, email, avatar, userId, address, phoneNumber);
                     Toast.makeText(AuthActivity.this, "Chào mừng " + res.data.user.name, Toast.LENGTH_SHORT).show();
 
-                    // Chuyển màn hình
                     startActivity(new Intent(AuthActivity.this, MainActivity.class));
                     finish();
+                }
+                else {
+                    Toast.makeText(AuthActivity.this, "Đăng nhập thất bại", Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
